@@ -1,34 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
 import MarriageContract from './contrat/Mariage.json';
+import MarriageAddress from './contrat/mariage-address.json';
 
 function AfficheInfo() {
-  const [contractInfos, setContractInfos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [hommeAddress, setHommeAddress] = useState('');
+  const [femmeAddress, setFemmeAddress] = useState('');
 
   useEffect(() => {
     const fetchContractInfos = async () => {
       try {
         const web3 = new Web3(window.ethereum);
-        const networkId = await web3.eth.net.getId();
-        const deployedNetwork = MarriageContract.networks[networkId];
-        if (!deployedNetwork) {
+        const mariageAddress = MarriageAddress.Token;
+        if (!mariageAddress) {
           throw new Error('Le contrat n\'est pas déployé sur ce réseau');
         }
-        const contract = new web3.eth.Contract(MarriageContract.abi, deployedNetwork.address);
-        const contractCount = await contract.methods.getContractCount().call();
-        const contractInfos = [];
-        for (let i = 0; i < contractCount; i++) {
-          const contractInfo = await contract.methods.getContractInfo(i).call();
-          contractInfos.push(contractInfo);
-        }
-        setContractInfos(contractInfos);
+        console.log(mariageAddress);
+        const contract = new web3.eth.Contract(MarriageContract.abi, mariageAddress);
+        
+        const hommeAddress = await contract.methods.getHomme().call();
+        const femmeAddress = await contract.methods.getFemme().call();
+        console.log(hommeAddress);
+        setHommeAddress(hommeAddress);
+        setFemmeAddress(femmeAddress);
+        
+        
         setLoading(false);
       } catch (error) {
         setErrorMessage('Une erreur est survenue lors de la récupération des informations du contrat.');
         console.error(error);
-        console.error(contractInfos);
         setLoading(false);
       }
     };
@@ -47,7 +49,7 @@ function AfficheInfo() {
   return (
     <div>
       <h2>Informations des contrats de mariage</h2>
-      {contractInfos.length === 0 ? (
+      {/*contractInfos.length === 0 ? (
         <p>Aucun contrat de mariage trouvé.</p>
       ) : (
         <ul>
@@ -55,13 +57,15 @@ function AfficheInfo() {
             <li key={index}>
               <strong>Contrat #{index + 1}</strong>
               <ul>
-                <li>Adresse de l'homme: {info.address}</li>
-                <li>Adresse de la femme: {info.address}</li>
+                <li>Adresse de l'homme: {info.homme.address}</li>
+                <li>Adresse de la femme: {info.femme.address}</li>
               </ul>
             </li>
           ))}
         </ul>
-      )}
+      )*/}
+      <p>Adresse Homme : {hommeAddress}</p>
+      <p>Adresse Femme : {femmeAddress}</p>
     </div>
   );
 }

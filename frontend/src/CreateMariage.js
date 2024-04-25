@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Web3 from 'web3';
 import MarriageContract from './contrat/Mariage.json';
+import AfficheInfo from './AfficheInfo.js';
 
 function CreateMarriage() {
   const [husbandAddress, setHusbandAddress] = useState('');
@@ -12,8 +13,10 @@ function CreateMarriage() {
     try {
       const web3 = new Web3(window.ethereum);
       const accounts = await web3.eth.requestAccounts();
-      const marriageContract = new web3.eth.Contract(MarriageContract.abi, MarriageContract.address);
-      await marriageContract.methods.createMarriage(husbandAddress, wifeAddress).send({ from: accounts[0] });
+      // Déploiement du contrat avec les adresses de l'homme et de la femme
+      await new web3.eth.Contract(MarriageContract.abi)
+        .deploy({ data: MarriageContract.bytecode, arguments: [husbandAddress, wifeAddress] })
+        .send({ from: accounts[0] });
       setHusbandAddress('');
       setWifeAddress('');
       setErrorMessage('');
