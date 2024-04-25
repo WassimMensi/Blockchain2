@@ -7,26 +7,54 @@ function CreateMarriage() {
   const [husbandAddress, setHusbandAddress] = useState('');
   const [wifeAddress, setWifeAddress] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [hommeAddress, setHommeAddress] = useState('');
+  const [femmeAddress, setFemmeAddress] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const addressTransac = await CreerContrat(husbandAddress, wifeAddress);
+    console.log(addressTransac);
+    if(addressTransac){
+      const {homme, femme} = RecupInfo(addressTransac);
+      console.log(homme, femme);
+
+      setHommeAddress(homme);
+      setFemmeAddress(femme);
+    }
+  };
+  
+  const CreerContrat = async (husband, wife) => {
     try {
       const web3 = new Web3(window.ethereum);
       const accounts = await web3.eth.requestAccounts();
       // Déploiement du contrat avec les adresses de l'homme et de la femme
-      await new web3.eth.Contract(MarriageContract.abi)
-        .deploy({ data: MarriageContract.bytecode, arguments: [husbandAddress, wifeAddress] })
+      const contrat = await new web3.eth.Contract(MarriageContract.abi)
+        .deploy({ data: MarriageContract.bytecode, arguments: [husband, wife] })
         .send({ from: accounts[0] });
       setHusbandAddress('');
       setWifeAddress('');
       setErrorMessage('');
-      console.log('Le mariage a été créé avec succès !');
+      return contrat.options.address;
     } catch (error) {
       setErrorMessage('Une erreur est survenue lors de la création du mariage.');
       console.error(error);
+      return null;
     }
   };
 
+  const RecupInfo = async (addressTransac) => {
+    try {
+      const web3 = new Web3(window.ethereum);
+      const accounts = await web3.eth.requestAccounts();
+      const contrat = await new web3.eth.Contract(MarriageContract.abi, addressTransac);
+      const hommeAddress = await contrat.methods.getHomme().call();
+      const femmeAddress = await contrat.methods.getFemme().call();
+      return { hommeAddress, femmeAddress };
+    } catch (error) {
+      setErrorMessage('Une erreur est survenue lors de la récupération des informations du contrat.');
+      console.error(error);
+    }
+  };
   return (
     <div>
       <h2>Créer un mariage</h2>
@@ -51,6 +79,8 @@ function CreateMarriage() {
         </div>
         <button type="submit">Créer le mariage</button>
       </form>
+      {hommeAddress && "Homme : " + {hommeAddress}}
+      {femmeAddress && "Femme : " + {femmeAddress}}
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
     </div>
   );

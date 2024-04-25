@@ -19,7 +19,7 @@ function AfficheInfo() {
         }
         console.log(mariageAddress);
         const contract = new web3.eth.Contract(MarriageContract.abi, mariageAddress);
-        
+        console.log(contract);
         const hommeAddress = await contract.methods.getHomme().call();
         const femmeAddress = await contract.methods.getFemme().call();
         console.log(hommeAddress);
