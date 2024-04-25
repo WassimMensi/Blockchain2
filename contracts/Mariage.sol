@@ -11,9 +11,9 @@ contract Mariage {
     event DecesDeclare(address personneDecedee);
     event DivorceDeclare(address homme, address femme);
 
-    constructor(address _homme, address _femme) {
-        homme = _homme;
-        femme = _femme;
+    constructor(string memory _homme, string memory _femme) {
+        homme = address(uint160(uint256(keccak256(abi.encodePacked(_homme)))));
+        femme = address(uint160(uint256(keccak256(abi.encodePacked(_femme)))));
     }
 
     function ajouterEnfant(address _enfant) public {
